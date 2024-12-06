@@ -63,36 +63,6 @@ fun main() {
 			}
 		}
 		
-		// Try placing an obstruction in front of every element in origPath and see if it gives you a loop
-//		for (p in origPath) { // Bear in mind p is the coord tied with the direction taken to reach this place
-//			if (input.gridQuery(p.first) == '^' && p.second == Steps.UP) {
-//				// We are at the start and going upwards, so can't place an obstacle here
-//				continue
-//			}
-//
-//			val pathDirn = p.second
-//
-//			if (pathDirn.nextCoord(p.first).first !in 0..<width || pathDirn.nextCoord(p.first).second !in 0..<height) {
-//				break
-//			}
-//
-//			if (input.gridQuery(pathDirn.nextCoord(p.first)) in listOf('#', '^')) {
-//				continue // There is an obstruction there anyway, or the next char is the start, which we can't replace
-//			}
-//
-//			// Replace the character in front of the current one with an obstacle
-//			val placeToReplaceWith = pathDirn.nextCoord(p.first)
-//
-//			inputCopy[placeToReplaceWith.second] =
-//				inputCopy[placeToReplaceWith.second]
-//					.replaceRange(placeToReplaceWith.first..placeToReplaceWith.first, "O")
-//
-//			if (isLooping(inputCopy)) {
-//				places.add(placeToReplaceWith)
-//			}
-//
-//			inputCopy = input.toMutableList()
-//		}
 		for (x in 0..<width) {
 			for (y in 0..<height) {
 				if (input.gridQuery(x to y) != '.') continue

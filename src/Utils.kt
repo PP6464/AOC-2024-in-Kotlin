@@ -40,7 +40,7 @@ enum class Directions {
 		return newCoordinates(coords.first, coords.second)
 	}
 	
-	fun isOpposite(other: Directions) : Boolean {
+	fun isOpposite(other : Directions) : Boolean {
 		return ordinal + other.ordinal == 7
 	}
 }
@@ -87,8 +87,30 @@ enum class Steps {
 		}
 	}
 	
+	fun turnLeft() : Steps {
+		return when (this) {
+			UP -> LEFT
+			DOWN -> RIGHT
+			LEFT -> DOWN
+			RIGHT -> UP
+		}
+	}
+	
+	fun opposite() : Steps {
+		return when (this) {
+			UP -> DOWN
+			DOWN -> UP
+			LEFT -> RIGHT
+			RIGHT -> LEFT
+		}
+	}
+	
 	companion object {
-		fun dirnBetween(a: Pair<Int, Int>, b: Pair<Int, Int>) : Steps {
+		fun isAdjacent(a : Pair<Int, Int>, b : Pair<Int, Int>) : Boolean {
+			return (a.first - b.first).absoluteValue + (a.second - b.second).absoluteValue == 1
+		}
+		
+		fun dirnBetween(a : Pair<Int, Int>, b : Pair<Int, Int>) : Steps {
 			return if ((a.first - b.first).absoluteValue + (a.second - b.second).absoluteValue != 1) {
 				throw Exception("The points must be adjacent")
 			} else if (a.second - b.second == 1) {

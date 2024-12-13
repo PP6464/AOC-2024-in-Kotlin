@@ -48,6 +48,8 @@ fun main() {
 		}
 		
 		for (region in regions) {
+			if (input.gridQuery(region.first()) == '.') continue
+			
 			var perimeter = 0
 			val area = region.size
 			
@@ -98,105 +100,88 @@ fun main() {
 		}
 		
 		for (region in regions) {
+			if (input.gridQuery(region.first()) == '.') continue
+			
 			val area = region.size
 			val corners = mutableListOf<Pair<Int, Int>>()
-			val tags = mutableMapOf<Pair<Int, Int>, MutableList<Steps>>() // Lets us tag to count concave corners
 			
-			for (plant in region) {
-				val edgesForPlant = mutableListOf<Steps>()
-				
-				// Count how many corners this plant in the region corresponds to
-				for (step in Steps.entries) {
-					val nextCoord = step.nextCoord(plant)
-					
-					if (nextCoord.first !in 0..<width || nextCoord.second !in 0..<height) {
-						edgesForPlant.add(step)
-						continue
-					}
-					
-					if (input.gridQuery(nextCoord) != input.gridQuery(plant)) {
-						edgesForPlant.add(step)
-						if (nextCoord in tags) {
-							tags[nextCoord] !!.add(step)
-						} else {
-							tags[nextCoord] = mutableListOf(step)
-						}
-					}
-					
-				}
-				
-//				for (edge in edgesForPlant) {
-//					edges.add(plant to edge)
-//				}
-				
-				// This checks for convex corners
-				for (i in edgesForPlant.indices) {
-					for (j in i + 1..<edgesForPlant.size) {
-						if (edgesForPlant[i].turnRight() == edgesForPlant[j] || edgesForPlant[i].turnLeft() == edgesForPlant[j]) {
-							corners += plant
+			val altInput =
+				input.withIndex().map { (y, s) -> s.withIndex().map { (x, _) -> if (x to y in region) 1 else - 1 } }
+			
+			// A very questionable way: convolution with kernels for corners
+			val cornerMatrices = listOf(
+				// Checks for concave in top right
+				listOf(
+					listOf(1, - 1),
+					listOf(1, 1),
+				),
+				// Concave in top left
+				listOf(
+					listOf(- 1, 1),
+					listOf(1, 1),
+				),
+				// Concave in bottom left
+				listOf(
+					listOf(1, 1),
+					listOf(- 1, 1),
+				),
+				// Concave in bottom right
+				listOf(
+					listOf(1, 1),
+					listOf(1, - 1),
+				),
+				// Convex in bottom-left
+				listOf(
+					listOf(- 1, 0),
+					listOf(1, - 1),
+				),
+				// Convex in bottom-right
+				listOf(
+					listOf(0, - 1),
+					listOf(- 1, 1),
+				),
+				// Convex in top-right
+				listOf(
+					listOf(- 1, 1),
+					listOf(0, - 1),
+				),
+				// Convex in top-left
+				listOf(
+					listOf(1, - 1),
+					listOf(- 1, 0),
+				),
+			)
+			
+			var cornerCount = 0
+			
+			for (i in 0..7) {
+				for (x in 0..<altInput[0].size - 1) {
+					for (y in 0..<altInput.size - 1) {
+						val overlapTopLeft = x to y
+						val matrix = cornerMatrices[i]
+						val requiredScore = if (i < 4) 4 else 3 // Concave corners require 4, convex corners require 3
+						
+						val actualScore = matrix[0][0] * altInput[overlapTopLeft.second][overlapTopLeft.first] +
+								matrix[0][1] * altInput[overlapTopLeft.second][overlapTopLeft.first + 1] +
+								matrix[1][0] * altInput[overlapTopLeft.second + 1][overlapTopLeft.first] +
+								matrix[1][1] * altInput[overlapTopLeft.second + 1][overlapTopLeft.first + 1]
+						
+						if (requiredScore == actualScore) {
+							cornerCount += 1
+							corners.add(overlapTopLeft)
 						}
 					}
 				}
 			}
 			
-			// Tracks concave corners, as those with two tags correspond to one corner there
-			// those with three correspond to two corners there
-			for (tag in tags) {
-				var adjacentTaggers = 0
-
-				for (i in 0..<tag.value.size) {
-					for (j in i + 1..<tag.value.size) {
-						if (tag.value[i].turnLeft() == tag.value[j] || tag.value[i].turnRight() == tag.value[j]) {
-							adjacentTaggers ++
-							corners += tag.key // The number of concave corners
-						}
-					}
-				}
-			}
-
-
-			// If we have four 'corners' that are diagonally adjacent, and not all the same type, we need to subtract two for each of the adjacent groups
-			var subtractCount = 0
-			val cornersSimplified = corners.toSet().toList()
-
-			for (i in cornersSimplified.indices) {
-				for (j in i + 1..<cornersSimplified.size) {
-					for (k in j + 1..<cornersSimplified.size) {
-						for (l in k + 1..<cornersSimplified.size) {
-							val sortedPts = listOf(corners[i], corners[j], corners[k], corners[l]).sortedWith(Comparator { o1, o2 ->
-								return@Comparator if (o1.second < o2.second) -1
-								else if (o1.second > o2.second) 1
-								else if (o1.first < o2.first) -1
-								else if (o1.first > o2.first) 1
-								else 0
-							}) // Sort by reading order
-
-							val plants = sortedPts.map { input.gridQuery(it) }
-
-							if (plants.count { it == input.gridQuery(region.first()) } != 2) continue
-
-							// Check for diagonal adjacency
-							if (sortedPts[1].first - sortedPts[0].first == 1 && sortedPts[1].second == sortedPts[0].second) {
-								if (sortedPts[3].first - sortedPts[2].first == 1 && sortedPts[3].second == sortedPts[2].second) {
-									if (sortedPts[2].second - sortedPts[0].second == 1 && sortedPts[2].first == sortedPts[0].first) {
-										// They are diagonally adjacent and not all the same plant
-										subtractCount += 2
-									}
-								}
-							}
-						}
-					}
-				}
-			}
-			
-			totalPrice += (area * (corners.size - subtractCount)).toBigInteger()
+			totalPrice += (area * cornerCount).toBigInteger()
 		}
 		
 		
 		return totalPrice
 	}
 	
-	val input = readInput("Day12_test")
+	val input = readInput("Day12")
 	part1(input).println()
 	part2(input).println()
 }

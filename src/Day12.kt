@@ -7,14 +7,16 @@ fun findRegion(seed : Pair<Int, Int>, input : List<String>, coveredSoFar : Set<P
 	val startChar = input.gridQuery(seed)
 	
 	for (step in Steps.entries) {
-		if (step.nextCoord(seed) in coveredSoFar) continue // Don't want to be stuck in an infinite recursion loop
+		val nextCoord = step.nextCoord(seed)
 		
-		if (step.nextCoord(seed).first !in 0..<width || step.nextCoord(seed).second !in 0..<height) {
+		if (nextCoord in coveredSoFar) continue // Don't want to be stuck in an infinite recursion loop
+		
+		if (nextCoord.first !in 0..<width || nextCoord.second !in 0..<height) {
 			continue
-		} else if (input.gridQuery(step.nextCoord(seed)) != startChar) {
+		} else if (input.gridQuery(nextCoord) != startChar) {
 			continue
 		} else {
-			region.addAll(findRegion(step.nextCoord(seed), input, region + coveredSoFar))
+			region.addAll(findRegion(nextCoord, input, region + coveredSoFar))
 		}
 	}
 	

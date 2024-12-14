@@ -12,6 +12,12 @@ fun readInput(name : String) = Path("src/inputs/$name.txt").readText().trim().li
  */
 fun Any?.println() = println(this)
 
+fun <T> List<T>.toPair() : Pair<T, T> {
+	assert(size == 2)
+	
+	return get(0) to get(1)
+}
+
 enum class Directions {
 	// They're ordered this way so that the sum of opposite direction's ordinals = 7
 	UP,

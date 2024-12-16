@@ -116,7 +116,7 @@ enum class Steps {
 			return (a.first - b.first).absoluteValue + (a.second - b.second).absoluteValue == 1
 		}
 		
-		fun dirnBetween(a : Pair<Int, Int>, b : Pair<Int, Int>) : Steps {
+		fun stepBetween(a : Pair<Int, Int>, b : Pair<Int, Int>) : Steps {
 			return if ((a.first - b.first).absoluteValue + (a.second - b.second).absoluteValue != 1) {
 				throw Exception("The points must be adjacent")
 			} else if (a.second - b.second == 1) {

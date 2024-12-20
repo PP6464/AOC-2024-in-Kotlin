@@ -18,6 +18,10 @@ fun <T> List<T>.toPair() : Pair<T, T> {
 	return get(0) to get(1)
 }
 
+fun cartesianDist(first : Pair<Int, Int>, second : Pair<Int, Int>) : Int {
+	return (first.first - second.first).absoluteValue + (first.second - second.second).absoluteValue
+}
+
 enum class Directions {
 	// They're ordered this way so that the sum of opposite direction's ordinals = 7
 	UP,

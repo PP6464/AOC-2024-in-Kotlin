@@ -5,3 +5,4 @@ build
 src/**/*.txt
 local.properties
 *.txt
+src/inputs
